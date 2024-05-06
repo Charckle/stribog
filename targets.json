@@ -1,0 +1,8 @@
+[
+{"name": "Test Dummy",
+"email": "test.dummy@myemail.com",
+"active": true},
+{"name": "Test Dummy 2",
+"email": "test.dummy.2@myemail.com",
+"active": false}
+]

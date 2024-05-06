@@ -1,0 +1,11 @@
+{"instance_name": "Test Stribog",
+"admin_email": "admin@myemailservice.com",
+"emails": true,
+"send_analitycs_to_admin": true,
+"source_check_interval": 10,
+"smtp_server": "127.0.0.1",
+"smtp_port": 587,
+"smtp_sender_email": "stribog@myemailservice.com",
+"smtp_password": "Iamastrongpassword!",
+"topic": "Hiking club",
+"message": "There is a new update for"}
