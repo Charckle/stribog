@@ -3,6 +3,7 @@ import time
 from modules.pylavor import Pylavor
 from modules.email_sender import EmS
 import json
+import logging
 
 version_ = "0.0.1"
 
@@ -13,6 +14,8 @@ settings_last_modified = "banan"
 targets = []
 targets_filename = "targets.json"
 targets_last_modified = "banan"
+
+logger = logging.getLogger(__name__)
 
 def logo():   
     logo_ascii = r"""
@@ -25,16 +28,12 @@ def logo():
         \/                     \/      /_____/  
 ------------------+
 """
+    
     print(logo_ascii)
     print("Stribog: A notification system for changes on a specific source")
     print(f"Version: {version_}")    
     print(f"Andrej Zubin - 6.5.2024")
     print("--------------------------------------------+ \n\n")
-
-def log_update(string_):
-    print("--------- -- --------")
-    print(string_)
-    print("--------- -- --------")
 
 
 def get_settings_filepath():
@@ -51,13 +50,20 @@ def load_data(file_path):
     return data
 
 
+def setup_logging(config):
+    logging_level_str = config.get("logging_level", "INFO").upper()
+    logging_level = getattr(logging, logging_level_str, logging.INFO)
+    logging.basicConfig(level=logging_level, format='%(asctime)s - %(levelname)s - %(message)s')
+    logger.info(f"Logging Level set to: {logging.getLevelName(logger.getEffectiveLevel())}")    
+    
+
+
 def settings_check():
     global settings_last_modified
     settings_current_modified = os.path.getmtime(get_settings_filepath())
     
     if settings_current_modified != settings_last_modified:
-        print("File has changed. Reloading config data...")
-        
+        logger.info(f"File has changed. Reloading config data...")
         settings_load()
         
         
@@ -67,8 +73,7 @@ def targets_check():
     targets_current_modified = os.path.getmtime(get_settings_filepath())
 
     if targets_current_modified != targets_last_modified:
-        print("File has changed. Reloading targets data...")
-        
+        logger.info(f"File has changed. Reloading targets data...")
         targets_load()
         
         
@@ -78,16 +83,16 @@ def load_json_file(filename_):
     try:
         json_file = Pylavor.json_read(current_dir, filename_)
     except FileNotFoundError:
-        log_update(f"Error: File {filename_} not found.")
+        logger.critical(f"Error: File {filename_} not found.")        
         # Stop the program
         exit(1)
     except IOError as e:
-        log_update(f"Error: Unable to read file {filename_} - {e}")
+        logger.critical(f"Error: Unable to read file {filename_} - {e}")        
         # Stop the program
         exit(1)
     except json.decoder.JSONDecodeError as e:
         # Handle JSON decoding error
-        log_update(f"Error decoding JSON {filename_}: {e}")    
+        logger.critical(f"Error decoding JSON {filename_}: {e}")
         # Stop the program
         exit(1)  
         
@@ -98,9 +103,11 @@ def settings_load():
     global settings
     
     settings = load_json_file(settings_filename)
+    setup_logging(settings)
     
     settings_last_modified = os.path.getmtime(get_settings_filepath())
-    log_update("Settings loaded successfully")
+    logger.debug(f"Settings loaded successfully")
+    
     
     
 def targets_load():
@@ -108,10 +115,9 @@ def targets_load():
     global targets
     
     targets = load_json_file(targets_filename)
-    
     targets_last_modified = os.path.getmtime(get_settings_filepath())
-
-    log_update("Targets loaded successfully")    
+    logger.debug(f"Targets loaded successfully")
+    
 
 
 def source_check_integrity():
@@ -130,7 +136,7 @@ def source_get_data():
 def source_modify_data_for_message(source_data):
     global settings
     
-    modified_data = f"{settings["message"]}: {settings["topic"]}: {source_data["topic"]}"
+    #modified_data = f"{settings["message"]}: {settings["topic"]}: {source_data["topic"]}"
     return modified_data
 
 
@@ -148,7 +154,8 @@ def notifications_proliferate(source_data):
             html_text = simple_text
             
             if target["active"] == True:
-                print(simple_text)
+                logger.debug(f"sending to: {target['name']}")
+                
                 #ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
     
 def admin_contact(what_to_say):
@@ -160,30 +167,46 @@ def admin_contact(what_to_say):
     html_text = simple_text
     
     ems_object = EmS(settings)
-    print(simple_text)
+    logger.debug(f"Sending to admin")
+    logger.debug(what_to_say)
+    
+    
     #ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
 
 def first_boot():
     global settings
+    global logger
     
     logo()
     # load settings
     settings_load()
 
-    print(f"Instance Name: {settings['instance_name']}")
-    print("--------------------------------------------------------+ \n\n")    
+    logger.info(f"Instance Name: {settings['instance_name']}")
+    logger.info(f"Version: {version_}")
+
+    
     # load targets
     targets_load()
     # check email server connection
     # emails_check_conn()
     ems_object = EmS(settings)
-    ems_object.check_conn()
+    logger.debug(f"Checking email server connection")
+    is_connected = ems_object.check_conn()
+    if is_connected == False:
+        logger.critical(f"Error booting up! - shutting down!")
+        # Stop the program
+        exit(1)
+    else:
+        logger.debug(f"Connection OK!")
+        
+        
 
 
 def main_loop():
     global settings
     
-    log_update("Starting main loop")
+    logger.info(f"Starting main loop")
+    
     time.sleep(3)
     
     while True:

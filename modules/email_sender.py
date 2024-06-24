@@ -23,8 +23,7 @@ class EmS:
         self.smtp_server = settings_["smtp_server"]
         self.smtp_port = settings_["smtp_port"]
         self.smtp_sender_email = settings_["smtp_sender_email"]
-        self.smtp_password = settings_["smtp_password"]
-            
+        self.smtp_password = settings_["smtp_password"]            
         
     def check_conn(self):
         try:
