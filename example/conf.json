@@ -8,4 +8,6 @@
 "smtp_sender_email": "stribog@myemailservice.com",
 "smtp_password": "Iamastrongpassword!",
 "topic": "Hiking club",
-"message": "There is a new update for"}
+"message": "There is a new update for",
+"on_no_memory_send_one": false,
+"logging_level": "DEBUG"}

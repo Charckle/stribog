@@ -2,8 +2,10 @@ import os
 import time
 from modules.pylavor import Pylavor
 from modules.email_sender import EmS
+from source_script import source_script
 import json
 import logging
+import hashlib
 
 version_ = "0.0.1"
 
@@ -14,6 +16,8 @@ settings_last_modified = "banan"
 targets = []
 targets_filename = "targets.json"
 targets_last_modified = "banan"
+
+in_memory_content = []
 
 logger = logging.getLogger(__name__)
 
@@ -117,27 +121,64 @@ def targets_load():
     targets = load_json_file(targets_filename)
     targets_last_modified = os.path.getmtime(get_settings_filepath())
     logger.debug(f"Targets loaded successfully")
+
+
+def hash_string(input_string: str) -> str:
+    # Create a SHA-256 hash object
+    sha256 = hashlib.sha256()
     
+    # Encode the input string and update the hash object
+    sha256.update(input_string.encode('utf-8'))
+    
+    # Return the hexadecimal representation of the hash
+    return sha256.hexdigest()
 
 
 def source_check_integrity():
     # check if the source has the required format, meaning it didn't change and the data can be extracted
-    return True
+    return source_script.is_source_OK(logger)
 
 
 def source_get_data():
+    global in_memory_content
+    in_memory_content_lenght = len(in_memory_content)
+    
     # write code to get the data
-    source_data = {"topic": "test 1, test2"}
+    source_data = source_script._get_data(logger)#{"topic": "test 1, test2"}
+    if source_data == None:
+        logger.error(f"No data could be scrapped.")        
+        
+        return None
     
-    modified_data = source_modify_data_for_message(source_data)
+    modified_data = []
     
+    for source_p in source_data:
+        hash_s = hash_string(source_p['post_excerpt'])
+        memory_string = f"{source_p['post_title']}: {hash_s}"
+        
+        if memory_string in in_memory_content:
+            pass
+        else:
+            in_memory_content.append(memory_string)
+            modified_data.append(source_modify_data_for_message(source_p))
+
+    # if nothing is in memory, dont just send all of them
+    if in_memory_content_lenght == 0:
+        # if app has nothing in memory, aka restarted, send jut the last one
+        if settings["on_no_memory_send_one"]:
+            modified_data = [modified_data[-1]]
+        else: 
+            modified_data = []
+
     return modified_data
 
-def source_modify_data_for_message(source_data):
-    global settings
-    
-    #modified_data = f"{settings["message"]}: {settings["topic"]}: {source_data["topic"]}"
-    return modified_data
+def source_modify_data_for_message(source_data):    
+    modified_data_p = f"""{settings['message']}: {settings['topic']}
+    {source_data['post_title']} . {source_data['post_date']}, - {source_data['post_category']},
+    {source_data['post_excerpt']}
+    {source_data['post_link']}
+    """
+    return modified_data_p
 
 
 def notifications_proliferate(source_data):
@@ -150,19 +191,22 @@ def notifications_proliferate(source_data):
         for target in targets:
             receiver_email = target["email"]
             subject =  "Update: " + settings["topic"]
-            simple_text = source_data
-            html_text = simple_text
             
             if target["active"] == True:
                 logger.debug(f"sending to: {target['name']}")
-                
-                #ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
+                for source_data_p in source_data:
+                    simple_text = source_data_p
+                    html_text = simple_text
+
+                    ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
     
-def admin_contact(what_to_say):
+def admin_contact(what_to_say):   
     global settings
     
-    receiver_email = target["admin_email"]
-    subject = f"Stribog Error on: {instance_name}"
+    receiver_email = settings["admin_email"]
+    receiver_email = settings["instance_name"]
+    
+    subject = f"Stribog Error on: {receiver_email}"
     simple_text = f"{what_to_say}"
     html_text = simple_text
     
@@ -207,23 +251,24 @@ def main_loop():
     
     logger.info(f"Starting main loop")
     
-    time.sleep(3)
+    #time.sleep(3)
     
     while True:
+        logger.debug(f"Starting new loop")
         source_data = "No data"
         
         settings_check()
         targets_check()
         
-        source_OK = source_check_integrity()
-        if not source_OK:
+        if not source_check_integrity():
             # contact the admin
             admin_contact("The Source seems to be corrupted.")
         
-        source_data = source_get_data()
-        if source_data:
-            notifications_proliferate(source_data)
-            
+        source_data_modified = source_get_data()
+        if source_data_modified:
+            notifications_proliferate(source_data_modified)
+        
+        logger.debug(f"Starting sleep interval")
         time.sleep(settings["source_check_interval"])
         
     
