@@ -17,6 +17,8 @@ targets = []
 targets_filename = "targets.json"
 targets_last_modified = "banan"
 
+contacted_admin = False
+
 in_memory_content = []
 
 logger = logging.getLogger(__name__)
@@ -136,6 +138,7 @@ def hash_string(input_string: str) -> str:
 
 def source_check_integrity():
     # check if the source has the required format, meaning it didn't change and the data can be extracted
+    logger.debug(f"Checking source integrity.")    
     return source_script.is_source_OK(logger)
 
 
@@ -204,9 +207,9 @@ def admin_contact(what_to_say):
     global settings
     
     receiver_email = settings["admin_email"]
-    receiver_email = settings["instance_name"]
+    instance_name = settings["instance_name"]
     
-    subject = f"Stribog Error on: {receiver_email}"
+    subject = f"Stribog Error on: {instance_name}"
     simple_text = f"{what_to_say}"
     html_text = simple_text
     
@@ -215,7 +218,7 @@ def admin_contact(what_to_say):
     logger.debug(what_to_say)
     
     
-    #ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
+    ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
 
 def first_boot():
     global settings
@@ -248,6 +251,7 @@ def first_boot():
 
 def main_loop():
     global settings
+    global contacted_admin
     
     logger.info(f"Starting main loop")
     
@@ -259,10 +263,13 @@ def main_loop():
         
         settings_check()
         targets_check()
-        
-        if not source_check_integrity():
+        print(f"{contacted_admin }")
+        if not source_check_integrity() and contacted_admin == False:
             # contact the admin
             admin_contact("The Source seems to be corrupted.")
+            contacted_admin = True
+        elif source_check_integrity():
+            contacted_admin = False
         
         source_data_modified = source_get_data()
         if source_data_modified:

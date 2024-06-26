@@ -8,13 +8,14 @@ from requests.exceptions import ConnectionError, Timeout, RequestException
 from bs4 import BeautifulSoup
 
 # URL of the webpage to scrape
-url = "https://opd.si"
+url = "https://opd.si/jbj"
 
 def is_source_OK(logger)-> bool :
     
     if get_content_div(logger):
         return True
     else:
+        logger.error(f"Source is NOT OK.")        
         False
 
 
@@ -60,7 +61,7 @@ def get_content_div(logger):
 def scrape_articles(url, logger):
     content_div = get_content_div(logger)
     if content_div:
-        logger.error(f"Content div found and started scrapping.")
+        logger.debug(f"Content div found and started scrapping.")
         # Find all article elements within the div
         articles = content_div.find_all('article')
 
