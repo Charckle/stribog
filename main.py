@@ -263,7 +263,7 @@ def main_loop():
         
         settings_check()
         targets_check()
-        print(f"{contacted_admin }")
+
         if not source_check_integrity() and contacted_admin == False:
             # contact the admin
             admin_contact("The Source seems to be corrupted.")
