@@ -3,7 +3,7 @@ services:
     container_name: stribog
     image: my-python-app
     volumes:
-      - ./conf.json:/app/targets.json
+      - ./conf.json:/app/conf.json
       - ./targets.json:/app/targets.json
       - ./source_script:/app/source_script
     logging:

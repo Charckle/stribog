@@ -147,7 +147,7 @@ def targets_load():
     global targets
     
     targets = load_json_file(targets_filename)
-    targets_last_modified = os.path.getmtime(get_settings_filepath())
+    targets_last_modified = os.path.getmtime(get_targets_filepath())
     logger.debug(f"Targets loaded successfully")
 
 
