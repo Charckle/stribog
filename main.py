@@ -7,7 +7,7 @@ import json
 import logging
 import hashlib
 
-version_ = "0.0.2"
+
 date_mod = "28.07.2024"
 
 settings = {}
@@ -45,7 +45,7 @@ def logo():
     logger.info(r"------------------+")    
 
     logger.info("Stribog: A notification system for changes on a specific source")    
-    logger.info(f"Version: {version_}")    
+    logger.info(f"Version: {get_version()}")    
     logger.info(f"Andrej Zubin - {date_mod}")
     logger.info("--------------------------------------------+ \n")    
     logger.info(f"Instance Name: {settings['instance_name']}")
@@ -57,6 +57,23 @@ def get_settings_filepath():
 
 def get_targets_filepath():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), targets_filename)
+
+def get_version_filepath():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "VERSION")
+
+def get_version():
+    version_ = "ERROR"
+    file_path = get_version_filepath()
+    try:
+        with open(file_path, 'r') as file:
+            version_ = file.read().strip()
+    except FileNotFoundError:
+        logger.error(f"Version file not found: {file_path}")            
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")            
+            
+    
+    return version_
 
 def load_data(file_path):
     # Load data from file
