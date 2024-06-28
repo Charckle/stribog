@@ -7,7 +7,8 @@ import json
 import logging
 import hashlib
 
-version_ = "0.0.1"
+version_ = "0.0.2"
+date_mod = "28.07.2024"
 
 settings = {}
 settings_filename = "conf.json"
@@ -34,12 +35,21 @@ def logo():
         \/                     \/      /_____/  
 ------------------+
 """
-    
-    print(logo_ascii)
-    print("Stribog: A notification system for changes on a specific source")
-    print(f"Version: {version_}")    
-    print(f"Andrej Zubin - 6.5.2024")
-    print("--------------------------------------------+ \n\n")
+    logger.info(r"---------------------------+")    
+    logger.info(r"  _________ __         ._____.                  ")    
+    logger.info(r" /   _____//  |________|__\_ |__   ____   ____  ")    
+    logger.info(r" \_____  \\   __\_  __ \  || __ \ /  _ \ / ___\ ")    
+    logger.info(r" /        \|  |  |  | \/  || \_\ (  <_> ) /_/  >")    
+    logger.info(r"/_______  /|__|  |__|  |__||___  /\____/\___  / ")    
+    logger.info(r"        \/                     \/      /_____/  ")    
+    logger.info(r"------------------+")    
+
+    logger.info("Stribog: A notification system for changes on a specific source")    
+    logger.info(f"Version: {version_}")    
+    logger.info(f"Andrej Zubin - {date_mod}")
+    logger.info("--------------------------------------------+ \n")    
+    logger.info(f"Instance Name: {settings['instance_name']}")
+    logger.info("--------------------------------------------+ \n\n")        
 
 
 def get_settings_filepath():
@@ -223,14 +233,10 @@ def admin_contact(what_to_say):
 def first_boot():
     global settings
     global logger
-    
-    logo()
+
     # load settings
-    settings_load()
-
-    logger.info(f"Instance Name: {settings['instance_name']}")
-    logger.info(f"Version: {version_}")
-
+    settings_load()    
+    logo()
     
     # load targets
     targets_load()

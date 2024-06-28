@@ -8,10 +8,12 @@ from email.mime.multipart import MIMEMultipart
 
 from os import environ 
 
+import logging
 
 from unidecode import unidecode
 import re
 
+logger = logging.getLogger(__name__)
 
 class EmS:    
     smtp_server = None
@@ -33,7 +35,7 @@ class EmS:
             return True
         except Exception as e:
             # If any error occurs (e.g., connection error, authentication error), return False
-            print("Error while testing the connection to the email server:", e)
+            logger.critical(f"Error while testing the connection to the email server: {e}")
             return False
                 
     
@@ -56,17 +58,14 @@ class EmS:
             success = self.connect_smpt(receiver_email, message)
             
         except (smtplib.SMTPConnectError, smtplib.SMTPServerDisconnected) as e:
-            #app.logger.debug("SMTP connection error or authentication error:", e)
-            print("SMTP connection error or authentication error:", e)
+            logger.error(f"SMTP connection error or authentication error: {e}")
         except (smtplib.SMTPAuthenticationError) as e:
-            #app.logger.debug("SMTP connection error, timeouterror:", e)
-            print("SMTP connection error, timeouterror:", e)
+            logger.error(f"SMTP connection error, timeouterror: {e}")
         except (socket.timeout) as e:
-            #app.logger.debug("Socket connection error, timeouterror:", e)
-            print("Socket connection error, timeouterror:", e)
+            logger.error(f"Socket connection error, timeouterror: {e}")
         except Exception as e:
-            #app.logger.debug("Random error:", e)         
-            print("Random error:", e)   
+            logger.error(f"Random error: {e}")
+            
         return success
     
 

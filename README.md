@@ -6,6 +6,5 @@
 - to change the source of the scrapping, change the `source_script` script. The required data is already determined, and the required functions also. Just change the functions to your will.
 
 # to-do
-- fix logging for emails
 - add html format for messages
 - add more than one message format (rocketchat, etc)
