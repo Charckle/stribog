@@ -55,7 +55,7 @@ def logo():
 def get_settings_filepath():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), settings_filename)
 
-def get_settings_filepath():
+def get_targets_filepath():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), targets_filename)
 
 def load_data(file_path):
@@ -86,7 +86,7 @@ def settings_check():
 def targets_check():
     global targets_last_modified
     
-    targets_current_modified = os.path.getmtime(get_settings_filepath())
+    targets_current_modified = os.path.getmtime(get_targets_filepath())
 
     if targets_current_modified != targets_last_modified:
         logger.info(f"File has changed. Reloading targets data...")
@@ -95,7 +95,7 @@ def targets_check():
         
 def load_json_file(filename_):
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    
+
     try:
         json_file = Pylavor.json_read(current_dir, filename_)
     except FileNotFoundError:
@@ -111,7 +111,7 @@ def load_json_file(filename_):
         logger.critical(f"Error decoding JSON {filename_}: {e}")
         # Stop the program
         exit(1)  
-        
+    
     return json_file
 
 def settings_load():
@@ -120,7 +120,6 @@ def settings_load():
     
     settings = load_json_file(settings_filename)
     setup_logging(settings)
-    
     settings_last_modified = os.path.getmtime(get_settings_filepath())
     logger.debug(f"Settings loaded successfully")
     
@@ -181,6 +180,7 @@ def source_get_data():
         if settings["on_no_memory_send_one"]:
             modified_data = [modified_data[-1]]
         else: 
+            logger.debug(f"No new content") 
             modified_data = []
 
     return modified_data
@@ -197,6 +197,8 @@ def source_modify_data_for_message(source_data):
 def notifications_proliferate(source_data):
     global targets
     global settings
+    logger.debug(f"Starting notification Proliferation")
+    
     
     ems_object = EmS(settings)
             
@@ -204,13 +206,13 @@ def notifications_proliferate(source_data):
         for target in targets:
             receiver_email = target["email"]
             subject =  "Update: " + settings["topic"]
-            
+
             if target["active"] == True:
                 logger.debug(f"sending to: {target['name']}")
                 for source_data_p in source_data:
                     simple_text = source_data_p
                     html_text = simple_text
-
+                    
                     ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
     
 def admin_contact(what_to_say):   
@@ -278,6 +280,7 @@ def main_loop():
             contacted_admin = False
         
         source_data_modified = source_get_data()
+
         if source_data_modified:
             notifications_proliferate(source_data_modified)
         

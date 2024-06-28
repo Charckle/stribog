@@ -8,7 +8,7 @@ from requests.exceptions import ConnectionError, Timeout, RequestException
 from bs4 import BeautifulSoup
 
 # URL of the webpage to scrape
-url = "https://opd.si/jbj"
+url = "https://opd.si"
 
 def is_source_OK(logger)-> bool :
     

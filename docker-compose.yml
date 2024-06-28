@@ -1,0 +1,15 @@
+services:
+  stribog:
+    container_name: stribog
+    image: my-python-app
+    volumes:
+      - ./conf.json:/app/targets.json
+      - ./targets.json:/app/targets.json
+      - ./source_script:/app/source_script
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "10"  
+    restart: unless-stopped
+

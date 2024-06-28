@@ -1,6 +1,12 @@
 # Use the official Alpine Linux image
 FROM python:3.9-alpine
 
+# Install tini
+RUN apk add --no-cache tini
+
+# Set tini as the init system
+ENTRYPOINT ["/sbin/tini", "--"]
+
 # Set the working directory
 WORKDIR /app
 
