@@ -6,6 +6,7 @@ from source_script import source_script
 import json
 import logging
 import hashlib
+from jinja2 import Environment, FileSystemLoader
 
 
 date_mod = "28.07.2024"
@@ -202,13 +203,28 @@ def source_get_data():
 
     return modified_data
 
-def source_modify_data_for_message(source_data):    
+def plain_text_data(source_data):    
     modified_data_p = f"""{settings['message']}: {settings['topic']}
     {source_data['post_title']} . {source_data['post_date']}, - {source_data['post_category']},
     {source_data['post_excerpt']}
     {source_data['post_link']}
     """
+    
     return modified_data_p
+
+def html_text_data(source_data):
+    env = Environment(loader=FileSystemLoader('.'))
+    template = env.get_template('templates/base.html')    
+    data = {"source_data": source_data,
+            "settings": settings}
+    
+    return template.render(data)
+
+def source_modify_data_for_message(source_data):    
+    plain_text_ = plain_text_data(source_data)
+    html_text_ = html_text_data(source_data)
+    print(html_text_ )
+    return [plain_text_, html_text_]
 
 
 def notifications_proliferate(source_data):
@@ -227,8 +243,8 @@ def notifications_proliferate(source_data):
             if target["active"] == True:
                 logger.debug(f"sending to: {target['name']}")
                 for source_data_p in source_data:
-                    simple_text = source_data_p
-                    html_text = simple_text
+                    simple_text = source_data_p[0]
+                    html_text = source_data_p[1]
                     
                     ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
     
