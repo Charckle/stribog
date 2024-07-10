@@ -165,7 +165,7 @@ def hash_string(input_string: str) -> str:
 def source_check_integrity():
     # check if the source has the required format, meaning it didn't change and the data can be extracted
     logger.debug(f"Checking source integrity.")    
-    return source_script.is_source_OK(logger)
+    return source_script.is_source_OK()
 
 
 def source_get_data():
@@ -173,7 +173,7 @@ def source_get_data():
     in_memory_content_lenght = len(in_memory_content)
     
     # write code to get the data
-    source_data = source_script._get_data(logger)#{"topic": "test 1, test2"}
+    source_data = source_script._get_data()#{"topic": "test 1, test2"}
     if source_data == None:
         logger.error(f"No data could be scrapped.")        
         
@@ -245,7 +245,7 @@ def admin_contact(what_to_say):
     ems_object = EmS(settings)
     logger.debug(f"Sending to admin")
     logger.debug(what_to_say)
-    
+    print("KURAC")
     
     ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
 
@@ -288,12 +288,14 @@ def main_loop():
         
         settings_check()
         targets_check()
-
-        if not source_check_integrity() and contacted_admin == False:
+        
+        source_integrity = source_check_integrity()
+        
+        if not targets_check and contacted_admin == False:
             # contact the admin
             admin_contact("The Source seems to be corrupted.")
             contacted_admin = True
-        elif source_check_integrity():
+        elif targets_check:
             contacted_admin = False
         
         source_data_modified = source_get_data()

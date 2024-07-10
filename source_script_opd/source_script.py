@@ -10,6 +10,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# URL of the webpage to scrape
+url = "https://opd.si"
+
 def is_source_OK()-> bool :
     
     if get_content_div():
@@ -21,51 +24,60 @@ def is_source_OK()-> bool :
 
 def _get_data():
     
-    return scrape_articles()
+    return scrape_articles(url, )
 
 
 
 def get_content_div():
+    # Send a GET request to the URL
     try:
-        file_path = 'source_script/content.html'
+        response = requests.get(url)
+        # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            # Parse the HTML content of the page
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Find the div with the specified class
+            content_div = soup.find('div', class_='content-inner grid-view view-has-post')
+            
+            return content_div
+        else:
+            return False
+            
+    except ConnectionError as e:
+        logger.error(f"Failed to connect to the server. Please check your internet connection or the URL. - {e}")        
         
-        # Open and read the file
-        with open(file_path, 'r', encoding='utf-8') as file:
-            # Read the entire content of the file
-            file_content = file.read()
-        
-        # Parse the file content with BeautifulSoup
-        soup = BeautifulSoup(file_content, 'html.parser')
-        
-        content_div = soup.find('ul', id='fruit-list')
-        
-        #WHAT IF DIV IS NOT FOUND?
-        
-        return content_div    
-
-    except Exception as e:
+        return False
+    except Timeout as e:
+        logger.error(f"The request timed out. Please try again later. - {e}")        
+        return False
+    except RequestException as e:
         logger.error(f"An error occurred: - {e}")        
         
         return False
+    
+    
+    
+    
 
 
-def scrape_articles():
+def scrape_articles(url):
     content_div = get_content_div()
     if content_div:
         logger.debug(f"Content div found and started scrapping.")
         # Find all article elements within the div
-        articles = content_div.find_all('li')
+        articles = content_div.find_all('article')
 
         scraped_data = []
 
         # Iterate over each article
         for article in articles:
-            post_link = article.get_text()
-            post_image = post_link
-            post_date = post_link
-            post_title = post_link
-            post_category = post_link
-            post_excerpt = post_link
+            post_link = article.find('a', class_='post-link')['href']
+            post_image = article.find('img', class_='wp-post-image')['src']
+            post_date = article.find('div', class_='post-date').text.strip()
+            post_title = article.find('h2', class_='post-title').text.strip()
+            post_category = article.find('a', rel='category tag').text.strip()
+            post_excerpt = article.find('div', class_='post-excerpt').text.strip()
 
             # Create a dictionary to store the extracted data
             article_data = {
