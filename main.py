@@ -223,7 +223,7 @@ def html_text_data(source_data):
 def source_modify_data_for_message(source_data):    
     plain_text_ = plain_text_data(source_data)
     html_text_ = html_text_data(source_data)
-    print(html_text_ )
+    
     return [plain_text_, html_text_]
 
 
