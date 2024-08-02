@@ -11,4 +11,5 @@
 - `on_no_memory_send_one` - if set to true, when it first boots up (when the internal ist of source items is 0), it will send the last scrapped item to the users. Otherwise, it will not send any, since you do not want items to be sent, if you reboot the app. A problem here can be, if there is 0 items in the source after it has scrapped it multiple times, and then a lot of items come at once.
 
 # to-do
+- fix log level not updating on hotreload
 - add more than one message format (rocketchat, etc)
