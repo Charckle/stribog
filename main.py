@@ -196,7 +196,7 @@ def source_get_data():
     if in_memory_content_lenght == 0:
         # if app has nothing in memory, aka restarted, send jut the last one
         if settings["on_no_memory_send_one"]:
-            modified_data = [modified_data[-1]]
+            modified_data = [modified_data[0]]
         else: 
             logger.debug(f"No new content") 
             modified_data = []

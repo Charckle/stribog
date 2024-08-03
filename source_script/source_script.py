@@ -91,7 +91,7 @@ def scrape_articles(url):
 
             # Append the dictionary to the list of scraped data
             scraped_data.append(article_data)
-
+        
         return scraped_data
     else:
         logger.error(f"Could not find the content div.")        
