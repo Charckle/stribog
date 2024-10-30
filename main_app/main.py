@@ -319,8 +319,9 @@ def main_loop():
         if source_data_modified:
             notifications_proliferate(source_data_modified)
         
-        logger.debug(f"Starting sleep interval")
-        time.sleep(settings["source_check_interval"])
+        sleep_interval = settings["source_check_interval"]
+        logger.debug(f"Starting sleep interval: {sleep_interval}")
+        time.sleep(sleep_interval)
         
     
 
