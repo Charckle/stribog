@@ -14,7 +14,6 @@ from app.pylavor import Pylavor
 # Define the WSGI application object
 app = Flask(__name__)
 
-
 targets_ram = []
 
 
@@ -44,8 +43,15 @@ app.register_blueprint(main_module)
 # ..
 
 # activate logging
+#app.logger.setLevel(logging.INFO)
 
-app.logger.setLevel(logging.DEBUG)
+logging_level_str = app.config['APP_LOGGING']
+logging_level = getattr(logging, logging_level_str, logging.INFO)
+app.logger.setLevel(logging_level)
+
+#logging.basicConfig(level=logging_level, format='%(asctime)s - %(levelname)s - %(message)s')
+#app.logger.info(f"Logging Level set to: {logging.getLevelName(app.logger.getEffectiveLevel())}")
+
 app.logger.info('Application startup')
 
 logo_ascii = r"""
@@ -71,4 +77,5 @@ app.logger.info("Registrum: An agregation system for events")
 app.logger.info(f"Version: {Randoms.get_version()}")    
 app.logger.info("--------------------------------------------+ \n")    
 app.logger.info(f"Instance Name: {app.config['APP_NAME']}")
+app.logger.info(f"Logging Level: {logging.getLevelName(app.logger.getEffectiveLevel())}")
 app.logger.info("--------------------------------------------+ \n\n")

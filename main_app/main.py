@@ -12,11 +12,11 @@ from jinja2 import Environment, FileSystemLoader
 date_mod = "28.07.2024"
 
 settings = {}
-settings_filename = "conf.json"
+settings_filename = "data/conf.json"
 settings_last_modified = "banan"
 
 targets = []
-targets_filename = "targets.json"
+targets_filename = "data/targets.json"
 targets_last_modified = "banan"
 
 contacted_admin = False
@@ -50,6 +50,7 @@ def logo():
     logger.info(f"Andrej Zubin - {date_mod}")
     logger.info("--------------------------------------------+ \n")    
     logger.info(f"Instance Name: {settings['instance_name']}")
+    logger.info(f"Logging Level: {logging.getLevelName(logger.getEffectiveLevel())}")
     logger.info("--------------------------------------------+ \n\n")        
 
 
@@ -261,7 +262,6 @@ def admin_contact(what_to_say):
     ems_object = EmS(settings)
     logger.debug(f"Sending to admin")
     logger.debug(what_to_say)
-    print("KURAC")
     
     ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
 

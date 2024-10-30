@@ -19,6 +19,8 @@ class Config(object):
     
     SESSION_COOKIE_SECURE = True
     
+    APP_LOGGING = environ.get('APP_LOGGING', "INFO")    
+    
 
     # Application threads. A common general assumption is
     # using 2 per available processor cores - to handle

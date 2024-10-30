@@ -1,5 +1,7 @@
-/conf.json
-/targets.json
+/main_app/data/conf.json
+/main_app/data/targets.json
+/web_manager/data/conf.json
+/web_manager/data/targets.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
