@@ -73,7 +73,7 @@ app.logger.info(r"/_______  /|__|  |__|  |__||___  /\____/\___  /  \____|__  (__
 app.logger.info(r"        \/                     \/      /_____/           \/     \/     \/     \//_____/      \/       ")    
 app.logger.info(r"------------------+")    
 
-app.logger.info("Registrum: An agregation system for events")    
+app.logger.info("Stribog Manager: Web Manager for Stribog")    
 app.logger.info(f"Version: {Randoms.get_version()}")    
 app.logger.info("--------------------------------------------+ \n")    
 app.logger.info(f"Instance Name: {app.config['APP_NAME']}")
