@@ -25,7 +25,10 @@
           {% for target in all_targets %}
 
             <a href="{{ url_for('main_page_module.targets_edit', target_index=loop.index0) }}" class="list-group-item list-group-item-action">{{ target["name"] }} 
-              <i class="bi bi-people-fill"></i> 
+              <i class="bi bi-people-fill"></i> - {% if target["active"] != 0 %}<span class="badge rounded-pill bg-success"><i class="bi bi-check-circle"></i> Aktiven</span>
+              {% else %}
+              <span class="badge rounded-pill bg-danger"></i> Neaktiven</span>
+              {% endif %}
             </a>
 
           {% endfor %}
