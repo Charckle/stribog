@@ -15,7 +15,7 @@ class Config(object):
     ADMIN_USERNAME = environ.get('SWM_ADMIN_USERNAME', "admin")
     # SHA512
     # banana
-    ADMIN_PASS_HASH = environ.get('SWM_ADMIN_PASS_HASH', "$6$rounds=656000$Q3Z3OlpOU0VOPRCd$LIRME01nvrON4QNQX1tTYAcBVRhujpG2GNdzCJHmvSJDMN4ZJDYkm5r4qb9WGXW9cPoDCxWnXL43tqU6IezTw0")
+    ADMIN_PASS_HASH = environ.get('SWM_ADMIN_PASS_HASH', "$6$rounds=656000$fwae7LSkwByBpb.3$aHJHT/14VpH3lWIMK9TllW10WK3qi5D5fHvF9JzH6f588ly/GX/j9ojs7mDt/RHgLTAfmEZezob87x/SlKElT/")
     
     SESSION_COOKIE_SECURE = True
     
