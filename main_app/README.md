@@ -13,3 +13,4 @@
 # to-do
 - fix log level not updating on hotreload
 - add more than one message format (rocketchat, etc)
+- log in a json file, to mark actions it made: targets Active removed on failed msg sending, when was last scraped, when was last msg sent

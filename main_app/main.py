@@ -310,9 +310,12 @@ def deactivate_targets(failed_recipients):
     
     for email_ in failed_recipients:
         for index, target in enumerate(targets):
+            receiver_name = target["name"]
             receiver_email = target["email"]
             if receiver_email == email_:
                 targets[index]["active"] = False
+                logger.info(f"Target set to Inactive due to email failure: {receiver_name}: {receiver_email}")
+                
     
     targets_save()
     
