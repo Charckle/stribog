@@ -316,8 +316,8 @@ def deactivate_targets(failed_recipients):
                 targets[index]["active"] = False
                 logger.info(f"Target set to Inactive due to email failure: {receiver_name}: {receiver_email}")
                 
-    
-    targets_save()
+    if len(failed_recipients) > 0:
+        targets_save()
     
 
 def first_boot():

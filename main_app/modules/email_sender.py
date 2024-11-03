@@ -187,9 +187,8 @@ class EmS:
             # Select the mailbox you want to use
             mail.select("Inbox")
             
-            #status, bounced_email_ids = mail.search(None, '(UNSEEN SUBJECT "Undelivered" SUBJECT "Mail delivery failed" SUBJECT "Failure" SUBJECT "Returned")')
             #status, all_email_ids = mail.search(None, "ALL")
-            status, bounced_email_ids = mail.search(None, 'UNSEEN SUBJECT "Mail delivery failed"')
+            status, bounced_email_ids = mail.search(None, 'UNSEEN OR SUBJECT "Mail delivery failed" SUBJECT "Warning: message"')
 
             if status != "OK":
                 logger.warning(f"Status of email object after filtering undelivered in not OK")                
