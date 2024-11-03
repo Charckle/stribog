@@ -10,8 +10,9 @@ from datetime import datetime
 from typing import Union, Optional
 import bleach
 
-
 from unidecode import unidecode
+
+logger = logging.getLogger(__name__)
 
 class Pylavor:
     @staticmethod

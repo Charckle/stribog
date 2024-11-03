@@ -39,6 +39,12 @@ def get_content_div():
             all_items = []
             
             # Find the section containing "Vabila na seje KS"            
+            novice_obvestila = soup.find('h3', string='Novice in obvestila').find_next('div', class_='post-grid')
+            # Extract all "vabila" items
+            novice_obvestila_items = novice_obvestila.find_all("div", class_="card")
+            all_items.append(novice_obvestila_items)
+            
+            # Find the section containing "Vabila na seje KS"            
             vabila_section = soup.find('h3', string='Vabila na seje KS').find_next('div', class_='files-grid')
             # Extract all "vabila" items
             vabila_items = vabila_section.find_all('div', class_='file-item filename')
@@ -55,7 +61,7 @@ def get_content_div():
             # Extract all "vabila" items
             dokumenti_items = dokumenti_section.find_all('div', class_='file-item filename')
             all_items.append(dokumenti_items)
-                        
+            
             return all_items
         else:
             return False
@@ -77,6 +83,7 @@ def get_content_div():
     
 def scrap_formula(div_content, type_):
 
+    all_data = []
     # Iterate over each article
     for content_ in div_content:
         post_link = url
@@ -96,19 +103,21 @@ def scrap_formula(div_content, type_):
             'post_excerpt': post_excerpt
         }
         
-    return article_data
+        all_data.append(article_data)
+          
+    return all_data
 
 def scrap_formula_othr(div_content, type_):
-
+    
+    all_data = []
     # Iterate over each article
     for content_ in div_content:
         post_link = url
         post_image = ""
         post_date = content_.find('span', class_='file-date')
         post_title = content_.text.strip()
-        post_title = content_.find_all(text=True)[3].strip(",").strip()
-        print()
-        print(content_.find_all(text=True))
+        post_title = content_.find_all(string=True)[3].strip(",").strip()
+        #print(content_.find_all(string=True))
         post_category = type_
         post_excerpt = post_title
 
@@ -122,24 +131,67 @@ def scrap_formula_othr(div_content, type_):
             'post_excerpt': post_excerpt
         }
         
-    return article_data
+        all_data.append(article_data)
+        
+    return all_data
+
+
+def scrap_formula_card(div_content, type_):
+    
+    all_data = []
+    
+    for card in div_content:
+        # Find h6 tag
+        post_title = card.find("h6").get_text(strip=True) if card.find("h6") else None
+        
+        # Find div with class "date"
+        post_date = card.find("div", class_="date").get_text(strip=True) if card.find("div", class_="date") else None
+        
+        # Find the "read-more" link
+        post_link = card.find("a", class_="read-more")["href"] if card.find("a", class_="read-more") else None
+        post_image = ""
+        post_category = type_
+        post_excerpt = post_title        
+        
+        article_data = {
+            'post_link': post_link,
+            'post_image': post_image,
+            'post_date': post_date,
+            'post_title': post_title,
+            'post_category': post_category,
+            'post_excerpt': post_excerpt
+        }
+        
+        all_data.append(article_data)
+        
+    return all_data
+
 
 def scrape_articles(url):
     content_div = get_content_div()
     if content_div:
         logger.debug(f"Content div found and started scrapping.")
-
-        vabila = content_div[0]
-        zapisniki = content_div[1]
-        dokumenti = content_div[2]
+        
+        novice_obvestila = content_div[0]        
+        vabila = content_div[1]
+        zapisniki = content_div[2]
+        dokumenti = content_div[3]
 
         # Append the dictionary to the list of scraped data
         scraped_data = []
         
-        scraped_data.append(scrap_formula(vabila, "vabila"))
-        scraped_data.append(scrap_formula(zapisniki, "zapisniki"))
-        scraped_data.append(scrap_formula_othr(dokumenti, "dokumenti"))
-
+        for i in scrap_formula_card(novice_obvestila, "novice, obvestila"):
+            scraped_data.append(i)   
+            
+        for i in scrap_formula(vabila, "vabila"):
+            scraped_data.append(i)
+        
+        for i in scrap_formula(zapisniki, "zapisniki"):
+            scraped_data.append(i)
+        
+        for i in scrap_formula_othr(dokumenti, "dokumenti"):
+            scraped_data.append(i)
+        
         return scraped_data
     else:
         logger.error(f"Could not find the content div.")        
@@ -148,5 +200,6 @@ def scrape_articles(url):
 
 
 
-if __name__ == "__main__":   
-    print(_get_data())
+if __name__ == "__main__":
+    data_ = _get_data()
+    print(data_)

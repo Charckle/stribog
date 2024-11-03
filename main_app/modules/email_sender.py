@@ -1,4 +1,8 @@
 import smtplib, ssl
+import imaplib
+import email
+from email.policy import default
+
 import socket
 from email import encoders
 from email.header import Header
@@ -63,6 +67,9 @@ class EmS:
             logger.error(f"SMTP connection error, timeouterror: {e}")
         except (socket.timeout) as e:
             logger.error(f"Socket connection error, timeouterror: {e}")
+        except smtplib.SMTPRecipientsRefused:
+            logger.error(f"The recipient email address was refused. It may not exist.")
+            success = "email_failed"
         except Exception as e:
             logger.error(f"Random error: {e}")
             
@@ -150,7 +157,7 @@ class EmS:
             server.sendmail(
                 self.smtp_sender_email, receiver_email, message.as_string()
             )            
-        return True        
+        return True
     
     
     def get_valid_filename(self, s):
@@ -167,3 +174,54 @@ class EmS:
         s = unidecode(str(s).strip().replace(' ', '_'))
     
         return re.sub(r'(?u)[^-\w.]', '', s)
+    
+    def check_not_delivered(self):
+        # POPRAVI TO V WITH STATEMENT
+        failed_recipients = []
+        
+        try:
+            # Connect to the IMAP server
+            mail = imaplib.IMAP4_SSL(self.smtp_server)
+            mail.login(self.smtp_sender_email, self.smtp_password)
+        
+            # Select the mailbox you want to use
+            mail.select("Inbox")
+            
+            #status, bounced_email_ids = mail.search(None, '(UNSEEN SUBJECT "Undelivered" SUBJECT "Mail delivery failed" SUBJECT "Failure" SUBJECT "Returned")')
+            #status, all_email_ids = mail.search(None, "ALL")
+            status, bounced_email_ids = mail.search(None, 'UNSEEN SUBJECT "Mail delivery failed"')
+
+            if status != "OK":
+                logger.warning(f"Status of email object after filtering undelivered in not OK")                
+                return
+            
+            # Process each bounced email
+            for email_id in bounced_email_ids[0].split():                # Fetch the email by ID
+                status, msg_data = mail.fetch(email_id, "(RFC822)")
+                if status != "OK":
+                    logger.debug(f"Failed to fetch email with ID: {email_id}")
+                    continue
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        # Parse the raw email bytes
+                        msg = email.message_from_bytes(response_part[1], policy=default)
+                        
+                        # Extract subject and other headers for debugging
+                        #subject = msg["subject"]
+                        #from_address = msg["from"]
+                        failed_recipient = msg.get("X-Failed-Recipients", "No Failed Recipients")                        
+                        #logger.debug(f"Bounce detected from {from_address}: {subject}")
+                        failed_recipients.append(failed_recipient)
+                        # email will be marked as READ
+            
+            # Logout and close the connection
+            mail.logout()
+            
+        
+        except imaplib.IMAP4.error as e:
+            logger.error(f"IMAP error: {e}")
+        except Exception as e:
+            logger.error(f"An error occurred: {e}")    
+            
+        return failed_recipients
+        

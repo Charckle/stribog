@@ -8,9 +8,13 @@ import random
 import pickle
 from datetime import datetime
 from typing import Union, Optional
+import bleach
 
 
 from unidecode import unidecode
+
+logger = logging.getLogger(__name__)
+
 
 class Pylavor:
     @staticmethod
@@ -25,6 +29,11 @@ class Pylavor:
     def get_valid_filename(s):
 
         """
+        Stolen from Django, me thinks?
+        Return the given string converted to a string that can be used for a clean
+        filename. Remove leading and trailing spaces; convert other spaces to
+        underscores; and remove anything that is not an alphanumeric, dash,
+        underscore, or dot.
         >>> get_valid_filename("john's portrait in 2004.jpg")
         'johns_portrait_in_2004.jpg'
         """
@@ -40,8 +49,9 @@ class Pylavor:
         if sanitation == True:
             filename = get_valid_filename(filename)
         
-        location_filename = location + "/" + filename
-        logging.debug(f"Saving to: {location_filename}")
+        #location_filename = location + "/" + filename
+        location_filename = os.path.join(location, filename)        
+        logger.debug(f"Saving to: {location_filename}")
         
         with open(f'{location_filename}', 'wb') as file:
             pickle.dump(data_, file)
@@ -49,8 +59,10 @@ class Pylavor:
     # Pylavor
     def pickle_read(location, filename):
         
-        location_filename = location + "/" + filename
-        logging.debug(f"Reading from: {location_filename}")
+        #location_filename = location + "/" + filename
+        location_filename = os.path.join(location, filename)
+        
+        logger.debug(f"Reading from: {location_filename}")
     
         with open(f'{location_filename}', 'rb') as file:
             return pickle.load(file)
@@ -63,9 +75,10 @@ class Pylavor:
 
         if sanitation == True:
             filename = Pylavor.get_valid_filename(filename)
-        
-        location_filename = location + "/" + filename
-        logging.debug(f"Saving to: {location_filename}")
+                
+        location_filename = os.path.join(location, filename)
+        #location_filename = location + "/" + filename
+        logger.debug(f"Saving to: {location_filename}")
 
         with open(f'{location_filename}', 'w') as outfile:
             json.dump(dictio, outfile)
@@ -73,7 +86,11 @@ class Pylavor:
     # Pylavor
     @staticmethod
     def json_read(location, filename):
+        
+        #location_filename = location + "/" + filename
         location_filename = os.path.join(location, filename)
+        
+        logger.debug(f"Reading from: {location_filename}")
 
         with open(f'{location_filename}') as json_file:
             data = json.load(json_file)
@@ -179,31 +196,6 @@ class Pylavor:
         return date_n_time
     
     # Pylavor
-    @staticmethod    
-    def username_create(str1, str2, min_len=7):
-        name_sanitized = Pylavor.get_valid_filename(str1).replace("_", "")
-        surname_sanitized = Pylavor.get_valid_filename(str2).replace("_", "")   
-        
-        # Take 4 characters from the first string
-        part1 = name_sanitized[:4]
-    
-        # Take 3 characters from the second string
-        part2 = surname_sanitized[:3]
-    
-        # Combine the parts
-        combined_str = part1 + part2
-        
-        # If the specified length is less than 7, set it to 7
-        if min_len < 7:
-            min_len = 7        
-    
-        # If the length is less than 7, add random characters
-        while len(combined_str) < min_len:
-            combined_str += random.choice(string.ascii_letters)
-    
-        return combined_str[:min_len]        
-    
-    # Pylavor
     @staticmethod
     def list_months():    
         months = {1: "January",
@@ -219,5 +211,25 @@ class Pylavor:
                     11: "November",
                     12: "December"}
         
-        return months
+        return months    
     
+    # Pylavor
+    @staticmethod        
+    def clean_rich_text(input_text):
+        # Define allowed tags and attributes
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr']
+        allowed_attributes = {'a': ['href', 'title']}
+    
+        # Use bleach to clean the input text
+        cleaned_text = bleach.clean(input_text, tags=allowed_tags, attributes=allowed_attributes)
+        
+        return cleaned_text
+    
+    # Pylavor
+    @staticmethod        
+    def create_folder(folder_path):    
+        if not exists(folder_path):
+            # If the folder doesn't exist, create it
+            os.makedirs(folder_path)    

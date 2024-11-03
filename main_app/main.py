@@ -51,7 +51,7 @@ def logo():
     logger.info("--------------------------------------------+ \n")    
     logger.info(f"Instance Name: {settings['instance_name']}")
     logger.info(f"Logging Level: {logging.getLevelName(logger.getEffectiveLevel())}")
-    logger.info("--------------------------------------------+ \n\n")        
+    logger.info("--------------------------------------------+ \n\n")   
 
 
 def get_settings_filepath():
@@ -88,9 +88,9 @@ def load_data(file_path):
 def setup_logging(config):
     logging_level_str = config.get("logging_level", "INFO").upper()
     logging_level = getattr(logging, logging_level_str, logging.INFO)
+    
     logging.basicConfig(level=logging_level, format='%(asctime)s - %(levelname)s - %(message)s')
     logger.info(f"Logging Level set to: {logging.getLevelName(logger.getEffectiveLevel())}")    
-    
 
 
 def settings_check():
@@ -110,7 +110,27 @@ def targets_check():
     if targets_current_modified != targets_last_modified:
         logger.info(f"File has changed. Reloading targets data...")
         targets_load()
-        
+
+
+def save_json_file(filename_, data_):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    try:
+        Pylavor.json_write(current_dir, filename_, data_, sanitation=False)
+    except FileNotFoundError:
+        logger.critical(f"Error: File {filename_} not found.")        
+        # Stop the program
+        exit(1)
+    except IOError as e:
+        logger.critical(f"Error: Unable to read file {filename_} - {e}")        
+        # Stop the program
+        exit(1)
+    except json.decoder.JSONDecodeError as e:
+        # Handle JSON decoding error
+        logger.critical(f"Error decoding JSON {filename_}: {e}")
+        # Stop the program
+        exit(1)  
+
         
 def load_json_file(filename_):
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -151,6 +171,15 @@ def targets_load():
     targets = load_json_file(targets_filename)
     targets_last_modified = os.path.getmtime(get_targets_filepath())
     logger.debug(f"Targets loaded successfully")
+
+    
+def targets_save():
+    global targets_last_modified
+    global targets
+    
+    save_json_file(targets_filename, targets)
+    targets_last_modified = os.path.getmtime(get_targets_filepath())
+    logger.debug(f"Targets saved successfully")
 
 
 def hash_string(input_string: str) -> str:
@@ -235,7 +264,8 @@ def notifications_proliferate(source_data):
     
     
     ems_object = EmS(settings)
-            
+    failed_recipients = []
+    
     if ems_object.check_conn():
         for target in targets:
             receiver_email = target["email"]
@@ -247,7 +277,16 @@ def notifications_proliferate(source_data):
                     simple_text = source_data_p[0]
                     html_text = source_data_p[1]
                     
-                    ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
+                    success = ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
+                    if success == "email_failed":
+                        failed_recipients.append(receiver_email)
+    
+    failed_recipients_emails = ems_object.check_not_delivered()
+    failed_recipients = failed_recipients + failed_recipients_emails
+    # deactivate recipients, whos emails failed
+    deactivate_targets(failed_recipients)
+    
+                    
     
 def admin_contact(what_to_say):   
     global settings
@@ -264,6 +303,19 @@ def admin_contact(what_to_say):
     logger.debug(what_to_say)
     
     ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
+    
+
+def deactivate_targets(failed_recipients):   
+    global targets
+    
+    for email_ in failed_recipients:
+        for index, target in enumerate(targets):
+            receiver_email = target["email"]
+            if receiver_email == email_:
+                targets[index]["active"] = False
+    
+    targets_save()
+    
 
 def first_boot():
     global settings
