@@ -33,14 +33,53 @@ main_page_module = Blueprint('main_page_module', __name__, url_prefix='/')
 @app.context_processor
 def inject_to_every_page():
     
-    return dict(Randoms=Randoms, datetime=datetime)
+    return dict(Randoms=Randoms, datetime=datetime, Pylavor=Pylavor)
+
+
+# Set the route and accepted methods
+@main_page_module.route('/base_', methods=['GET'])
+@login_required
+def base_():
+    return render_template("main_page_module/base.html")
 
 # Set the route and accepted methods
 @main_page_module.route('/', methods=['GET'])
 @login_required
 def index():
+    
+    try:
+        settings = Gears_obj.load_settings()
+    except Exception as e:
+        app.logger.warn(f"{e}")
+        error_msg = "Napaka pri nalaganju nastavitev iz datoteke."
+        flash(error_msg, 'error')
+        
+        return redirect(url_for("main_page_module.base_"))
+    
+    try:
+        events = Gears_obj.load_events()
+    except Exception as e:
+        app.logger.warn(f"{e}")
+        error_msg = "Napaka pri nalaganju dogodkov iz datoteke."
+        flash(error_msg, 'error')
+        
+        return redirect(url_for("main_page_module.base_"))
+    
+    try:
+        targets = Gears_obj.load_targets()
+    except Exception as e:
+        app.logger.warn(f"{e}")
+        error_msg = "Napaka pri nalaganju naslovnikov iz datoteke."
+        flash(error_msg, 'error')
+        
+        return redirect(url_for("main_page_module.base_"))
+    
+    active_targets = sum(1 for target in targets if target["active"] == True)
+    all_targets = sum(1 for target in targets)
+    
 
-    return render_template("main_page_module/index.html")
+    return render_template("main_page_module/index.html", settings=settings,events=events,
+                           active_targets=active_targets, all_targets=all_targets)
 
 
 # Set the route and accepted methods
@@ -169,7 +208,7 @@ def settings_edit():
         error_msg = "Napaka pri nalaganju nastavitev iz datoteke."
         flash(error_msg, 'error')
         
-        return redirect(url_for("main_page_module.index"))        
+        return redirect(url_for("main_page_module.base_"))        
 
     # GET
     if request.method == 'GET':

@@ -1,5 +1,7 @@
 import os
 import time
+from datetime import date
+from datetime import datetime
 from modules.pylavor import Pylavor
 from modules.email_sender import EmS
 from source_script import source_script
@@ -9,8 +11,6 @@ import hashlib
 from jinja2 import Environment, FileSystemLoader
 
 
-date_mod = "28.07.2024"
-
 settings = {}
 settings_filename = "data/conf.json"
 settings_last_modified = "banan"
@@ -18,6 +18,9 @@ settings_last_modified = "banan"
 targets = []
 targets_filename = "data/targets.json"
 targets_last_modified = "banan"
+
+events_ = {}
+events_filename = "data/events.json"
 
 contacted_admin = False
 
@@ -47,7 +50,6 @@ def logo():
 
     logger.info("Stribog: A notification system for changes on a specific source")    
     logger.info(f"Version: {get_version()}")    
-    logger.info(f"Andrej Zubin - {date_mod}")
     logger.info("--------------------------------------------+ \n")    
     logger.info(f"Instance Name: {settings['instance_name']}")
     logger.info(f"Logging Level: {logging.getLevelName(logger.getEffectiveLevel())}")
@@ -182,6 +184,27 @@ def targets_save():
     logger.debug(f"Targets saved successfully")
 
 
+def events_load():
+    global events_
+    
+    events_ = load_json_file(events_filename)
+    logger.debug(f"Events loaded successfully")
+
+
+def events_save():
+    global events_
+    
+    clean_events()
+    
+    save_json_file(events_filename, events_)
+    logger.debug(f"Events saved successfully")
+    
+    
+def clean_events(num_events=100):
+    global events_
+    
+    events_["events"] = events_["events"][-num_events:]
+
 def hash_string(input_string: str) -> str:
     # Create a SHA-256 hash object
     sha256 = hashlib.sha256()
@@ -232,10 +255,11 @@ def source_get_data():
             modified_data = []
 
     return modified_data
+    
 
 def plain_text_data(source_data):    
     modified_data_p = f"""{settings['message']}: {settings['topic']}
-    {source_data['post_title']} . {source_data['post_date']}, - {source_data['post_category']},
+    {source_data['post_title']} . {source_data['post_date']}, - {source_data['post_category']}
     {source_data['post_excerpt']}
     {source_data['post_link']}
     """
@@ -260,6 +284,8 @@ def source_modify_data_for_message(source_data):
 def notifications_proliferate(source_data):
     global targets
     global settings
+    global events_
+    
     logger.debug(f"Starting notification Proliferation")
     
     
@@ -280,6 +306,8 @@ def notifications_proliferate(source_data):
                     success = ems_object.send_no_attach(receiver_email, subject, simple_text, html_text)
                     if success == "email_failed":
                         failed_recipients.append(receiver_email)
+                    else:
+                        events_["emails_sent"] = events_["emails_sent"] + 1       
     
     failed_recipients_emails = ems_object.check_not_delivered()
     failed_recipients = failed_recipients + failed_recipients_emails
@@ -314,10 +342,19 @@ def deactivate_targets(failed_recipients):
             receiver_email = target["email"]
             if receiver_email == email_:
                 targets[index]["active"] = False
-                logger.info(f"Target set to Inactive due to email failure: {receiver_name}: {receiver_email}")
+                info_ = f"Target set to Inactive due to email failure: {receiver_name}: {receiver_email}"
+                logger.info(info_)
+                save_event(info_)
                 
     if len(failed_recipients) > 0:
         targets_save()
+
+
+def save_event(event_):
+    global events_
+    
+    string_ = f"{datetime.now().strftime("%H:%M %-m.%-d.%Y")}: {event_}"
+    events_["events"].append(string_)
     
 
 def first_boot():
@@ -325,11 +362,15 @@ def first_boot():
     global logger
 
     # load settings
-    settings_load()    
+    settings_load()
     logo()
     
     # load targets
     targets_load()
+    
+    # events
+    events_load()
+    
     # check email server connection
     # emails_check_conn()
     ems_object = EmS(settings)
@@ -348,6 +389,8 @@ def first_boot():
 def main_loop():
     global settings
     global contacted_admin
+    global events_
+    
     
     logger.info(f"Starting main loop")
     
@@ -357,10 +400,13 @@ def main_loop():
         logger.debug(f"Starting new loop")
         source_data = "No data"
         
+        current_date = date.today().isoformat()
+        
         settings_check()
         targets_check()
         
         source_integrity = source_check_integrity()
+        events_["last_scrape"] = current_date
         
         if not targets_check and contacted_admin == False:
             # contact the admin
@@ -373,6 +419,10 @@ def main_loop():
 
         if source_data_modified:
             notifications_proliferate(source_data_modified)
+            events_["last_successfull_scrape"] = current_date
+        
+        # save statistics and events
+        events_save()
         
         sleep_interval = settings["source_check_interval"]
         logger.debug(f"Starting sleep interval: {sleep_interval}")

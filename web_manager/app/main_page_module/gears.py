@@ -34,3 +34,10 @@ class Gears_obj:
         filename = "conf.json"
 
         return Pylavor.json_read(location, filename)
+    
+    @staticmethod
+    def load_events():        
+        location = "data"
+        filename = "events.json"
+
+        return Pylavor.json_read(location, filename)    

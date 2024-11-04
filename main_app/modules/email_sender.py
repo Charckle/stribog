@@ -68,7 +68,7 @@ class EmS:
         except (socket.timeout) as e:
             logger.error(f"Socket connection error, timeouterror: {e}")
         except smtplib.SMTPRecipientsRefused:
-            logger.error(f"The recipient email address was refused. It may not exist.")
+            logger.warning(f"The recipient email address was refused. It may not exist.")
             success = "email_failed"
         except Exception as e:
             logger.error(f"Random error: {e}")

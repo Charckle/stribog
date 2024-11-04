@@ -10,15 +10,102 @@
 {% block content%}
 
   <div class="container-fluid" >
+    <br>
     <div class="row">
-      <div class="col-sm-7">
-
+      <div class="col-sm-2">
       </div>
       
+      <div class="col-sm-8">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Ime aplikacije</th>
+              <th scope="col">Text zadeve email-a</th>
+              <th scope="col">Text email obvestila</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ settings["instance_name"] }}</td>
+              <td>{{ settings["topic"] }}</td>
+              <td>{{ settings["message"] }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Logging lvl</th>
+              <th scope="col">Admin email</th>
+              <th scope="col">Obveščanje Admin</th>
+              <th scope="col">Email za pošiljanje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ settings["logging_level"] }}</td>
+              <td>{{ settings["admin_email"] }}</td>
+              <td>{% if settings["send_analitycs_to_admin"] == True %}<span class="badge text-bg-success">Aktivirano</span>{% else %}<span class="badge text-bg-secondary">Deaktivirano</span>{% endif %}</td>
+              <td>{{ settings["smtp_sender_email"] }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Zadnje preverjanje</th>
+              <th scope="col">Zadnja zaznana sprememba</th>
+              <th scope="col">Št. poslanih emailov</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ Pylavor.date_to_string(events["last_scrape"]) }}</td>
+              <td>{{ Pylavor.date_to_string(events["last_successfull_scrape"]) }}</td>
+              <td><span class="badge text-bg-light">{{ events["emails_sent"] }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Pošiljanje zadnje zadeve, ob prvem zagonu</th>
+              <th scope="col">Email pošiljanje</th>
+              <th scope="col">Št. aktivnih uporabnikov</th>
+              <th scope="col">Št. neaktivnih uporabnikov</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{% if settings["on_no_memory_send_one"] == True %}<span class="badge text-bg-danger">Aktivirano</span>{% else %}<span class="badge text-bg-success">Deaktivirano</span>{% endif %}</td>
+              <td>{% if settings["emails"] == True %}<span class="badge text-bg-success">Aktivirano</span>{% else %}<span class="badge text-bg-warning">Deaktivirano</span>{% endif %}</td>
+              <td><span class="badge text-bg-success">{{ active_targets }}</span>  / {{ all_targets }}</td>
+              <td><span class="badge text-bg-secondary">{{ all_targets - active_targets }}</span> / {{ all_targets }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="row">
+          <hr>
+          <h3>Dogodki</h3>
+
+          <ul class="list-group">
+            {% for event in events["events"] | reverse  %}
+  
+              <button type="button" class="list-group-item list-group-item-action"><i class="bi bi-x-diamond-fill"></i> {{event}}</button>
+  
+            {% endfor %}
+          </ul>
+        </div>
+        
+      </div>
+
 
         
-      <div class="col-sm-5">
-
+      <div class="col-sm-2">
       </div>
     </div>
   </div>
