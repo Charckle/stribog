@@ -356,6 +356,7 @@ def save_event(event_):
     string_ = f"{datetime.now().strftime('%H:%M %-m.%-d.%Y')}: {event_}"
     events_["events"].append(string_)
     
+    
 
 def first_boot():
     global settings
