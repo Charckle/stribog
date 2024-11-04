@@ -353,7 +353,7 @@ def deactivate_targets(failed_recipients):
 def save_event(event_):
     global events_
     
-    string_ = f"{datetime.now().strftime("%H:%M %-m.%-d.%Y")}: {event_}"
+    string_ = f"{datetime.now().strftime('%H:%M %-m.%-d.%Y')}: {event_}"
     events_["events"].append(string_)
     
 
