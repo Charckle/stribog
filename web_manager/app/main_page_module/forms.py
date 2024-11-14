@@ -28,7 +28,7 @@ class Target(FlaskForm):
             validators.InputRequired(message='Specificiraj, če je aktiven')], 
                              choices=[('0', 'No'), ('1', 'Yes')])    
 
-    submit = SubmitField("Dodaj dogodek")
+    submit = SubmitField("Dodaj naslovnika")
     
     
 class Configuration(FlaskForm):
@@ -75,7 +75,7 @@ class Configuration(FlaskForm):
                                       ('WARNING', 'WARNING'), ('ERROR', 'ERROR'),
                                       ('CRITICAL', 'CRITICAL')])      
 
-    submit = SubmitField("Dodaj dogodek")
+    submit = SubmitField("Shrani nastavitve")
 
 
 class Login(FlaskForm):

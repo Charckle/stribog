@@ -13,6 +13,7 @@ from wrappers import login_required
 from app.pylavor import Pylavor
 from app.main_page_module.other import Randoms
 from app.main_page_module.gears import Gears_obj
+from app.main_page_module.email_sender import EmS
 
 from app import app, targets_ram
 
@@ -255,6 +256,34 @@ def settings_edit():
             flash(f'Invalid Data for {field}: {error}', 'error')    
             
     return render_template("main_page_module/admin/settings_edit.html", form=form)
+
+
+# Set the route and accepted methods
+@main_page_module.route('/test_email/', methods=['GET'])
+@login_required
+def test_email():
+    try:
+        settings = Gears_obj.load_settings()
+        
+        ems_object = EmS(settings)
+        is_connected, error_ = ems_object.check_conn()
+        
+        if is_connected == False:
+            error_msg = f"Email test spodletel: {error_}"
+            flash(error_msg, 'error')
+            
+        else:
+            error_msg = "Email uspešno stestiran!."
+            flash(error_msg, 'success')
+                    
+    except Exception as e:
+        app.logger.warn(f"{e}")
+        error_msg = "Napaka pri nalaganju nastavitev iz datoteke."
+        flash(error_msg, 'error')
+        
+        return redirect(url_for("main_page_module.base_"))
+
+    return redirect(url_for("main_page_module.settings_edit"))
 
 
 
