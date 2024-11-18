@@ -16,7 +16,11 @@
       <div class="col-sm-1">        
       </div>
       <div class="col-sm-10">
-        <h3>Vsi naslovniki <a href="{{ url_for('main_page_module.targets_new') }}" class="btn btn-outline-primary btn-sm" >Nov naslovnik</a></h3>
+        <h3>Vsi naslovniki 
+        <a href="{{ url_for('main_page_module.targets_new') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-person-add"></i> Nov naslovnik</a>
+        <a href="{{ url_for('main_page_module.targets_new') }}" class="btn btn-outline-secondary btn-sm">Uvozi naslovnike</a>
+        <a href="{{ url_for('main_page_module.export_targets') }}" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel"></i> Izvozi naslovnike</a>
+      </h3>
         
 
         <hr>

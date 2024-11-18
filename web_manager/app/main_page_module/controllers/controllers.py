@@ -12,6 +12,7 @@ from app.main_page_module.forms import form_dicts
 from wrappers import login_required
 from app.pylavor import Pylavor
 from app.main_page_module.other import Randoms
+from app.main_page_module.excel_obj import ExcelO
 from app.main_page_module.gears import Gears_obj
 from app.main_page_module.email_sender import EmS
 
@@ -285,6 +286,21 @@ def test_email():
 
     return redirect(url_for("main_page_module.settings_edit"))
 
+
+# Set the route and accepted methods
+@main_page_module.route('/export_targets/', methods=['GET'])
+@login_required
+def export_targets():
+    try:
+        targets = Gears_obj.load_targets()
+    except Exception as e:
+        app.logger.warn(f"{e}")
+        error_msg = "Napaka pri nalaganju naslovnikov iz datoteke."
+        flash(error_msg, 'error')
+        
+        return redirect(url_for("main_page_module.targets_all"))
+
+    return ExcelO.get_all_targets(targets)
 
 
 # Set the route and accepted methods
