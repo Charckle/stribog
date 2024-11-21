@@ -30,7 +30,7 @@ def auto_fit_columns(ws):
 class ExcelO:
     # ExcelO
     @staticmethod    
-    def get_all_targets(targets):
+    def export_targets(targets):
         fileName = f"Vsi_naslovniki"
         
         # Create a new Workbook

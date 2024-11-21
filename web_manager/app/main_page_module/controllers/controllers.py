@@ -300,7 +300,7 @@ def export_targets():
         
         return redirect(url_for("main_page_module.targets_all"))
 
-    return ExcelO.get_all_targets(targets)
+    return ExcelO.export_targets(targets)
 
 
 # Set the route and accepted methods
