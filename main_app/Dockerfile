@@ -16,8 +16,12 @@ COPY requirements.txt .
 # Install any dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN adduser -D -u 1000 appuser
+
 # Copy the rest of the application code into the image
 COPY . .
+
+USER appuser
 
 # Command to run the application
 CMD ["python", "main.py"]
