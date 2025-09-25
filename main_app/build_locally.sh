@@ -2,4 +2,4 @@ USERNAME=charckle
 VERSION=$(cat VERSION)
 IMAGE=stribog
 
-docker build -f Dockerfile-alpine -t $USERNAME/$IMAGE:$VERSION-alpine .
+docker build -f Dockerfile -t $USERNAME/$IMAGE:$VERSION-alpine .
