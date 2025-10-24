@@ -74,7 +74,10 @@ def scrape_articles(url):
         # Iterate over each article
         for article in articles:
             post_link_a = article.find('a')['href']
-            post_link = f"{base_url}{post_link_a.split('/en/')[1]}"
+            try:
+                post_link = f"{base_url}{post_link_a.split('/en/')[1]}"
+            except:
+                post_link = f"{base_url}{post_link_a.split('/')[1]}"
             post_image_a = article.find('a').find('img')['src']
             post_image = f"{base_url}media{post_image_a.split('media')[1]}"
             header_ = article.find('header', class_='list__header')
