@@ -1,5 +1,5 @@
 # Use the official Alpine Linux image
-FROM python:3.9-alpine
+FROM python:3.10-alpine
 
 # Install tini
 RUN apk add --no-cache tini
