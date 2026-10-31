@@ -1,3 +1,4 @@
+/main_app/.venv/
 /main_app/data/conf.json
 /main_app/data/targets.json
 /web_manager/data/conf.json
